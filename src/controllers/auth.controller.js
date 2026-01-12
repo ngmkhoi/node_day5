@@ -31,7 +31,39 @@ const createUser = async (req, res) => {
     }
 }
 
+const refreshToken = async (req, res) => {
+    try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.error(401, 'Refresh token required');
+        }
+        const token = authHeader?.replace('Bearer', '')?.trim();
+        const result = await authService.createNewToken(token);
+        res.success(result, 200);
+    } catch (error) {
+        if (error.message.includes('Invalid') || error.message.includes('expired')) {
+            return res.error(403, error.message);
+        }
+        res.error(500, 'Internal server error');
+    }
+}
+
+const logout = async (req, res) => {
+    try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.error(401, 'Refresh token required');
+        }
+        const token = authHeader?.replace('Bearer', '')?.trim();
+        const result = await authService.logoutUser(token);
+        res.success(result, 200);
+    } catch (error) {
+        res.error(500, error.message);
+    }
+}
 module.exports = {
     login,
     createUser,
+    refreshToken,
+    logout,
 }

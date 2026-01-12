@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const {secret} = require("../config/jwt");
+const {SecretAccess} = require("../config/jwt");
 require('dotenv').config();
 
 const authMiddleware = async (req, res, next) => {
@@ -11,7 +11,7 @@ const authMiddleware = async (req, res, next) => {
     }
 
     try {
-        req.user = jwt.verify(token, secret);
+        req.user = jwt.verify(token, SecretAccess);
         next();
     } catch (error) {
         return res.status(403).json({ message: "Token is invalid or expired." });

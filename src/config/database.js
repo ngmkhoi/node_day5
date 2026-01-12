@@ -50,6 +50,19 @@ const pool = mysql.createPool({
             foreign key (sender_id) references users(id) on delete cascade
         );`)
 
+        await pool.query(`create table if not exists refresh_token (
+            id int auto_increment primary key,
+            user_id int not null,
+            token varchar(255) not null unique,
+            expired_at timestamp not null,
+            created_at timestamp default current_timestamp,
+            revoked boolean default false,
+            foreign key (user_id) references users(id) on delete cascade,
+            index idx_user_id (user_id),
+            index idx_expired (expired_at),
+            index idx_user_revoked (user_id, revoked)
+        );`)
+
         console.log('Table created successfully');
     }catch (error) {
         console.error('Error creating table:', error);
