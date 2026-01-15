@@ -1,4 +1,12 @@
 const authService = require('../services/auth.service');
+const { COOKIE } = require('../config/constants');
+
+const cookieOptions = {
+    httpOnly: COOKIE.HTTP_ONLY,
+    secure: COOKIE.SECURE,
+    path: COOKIE.PATH,
+    sameSite: COOKIE.SAME_SITE
+};
 
 const login = async (req, res) => {
     try {
@@ -9,12 +17,7 @@ const login = async (req, res) => {
             return res.error(401, 'Invalid email or password')
         }
 
-        res.cookie('refreshToken', result.refreshToken, {
-            httpOnly: true,
-            secure: false,
-            path: '/',
-            sameSite: 'strict'
-        });
+        res.cookie(COOKIE.REFRESH_TOKEN_NAME, result.refreshToken, cookieOptions);
 
         res.success({
             user: result.user,
@@ -33,12 +36,7 @@ const createUser = async (req, res) => {
         const { email, password, full_name } = req.body;
         const result = await authService.register({ email, password, full_name });
 
-        res.cookie('refreshToken', result.refreshToken, {
-            httpOnly: true,
-            secure: false,
-            path: '/',
-            sameSite: 'strict'
-        });
+        res.cookie(COOKIE.REFRESH_TOKEN_NAME, result.refreshToken, cookieOptions);
 
         res.success({
             user: result.user,
@@ -54,17 +52,12 @@ const createUser = async (req, res) => {
 
 const refreshToken = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies[COOKIE.REFRESH_TOKEN_NAME];
         if (!refreshToken) {
             return res.error(401, 'Token not found, please log in.');
         }
         const result = await authService.createNewToken(refreshToken);
-        res.cookie('refreshToken', result.refreshToken, {
-            httpOnly: true,
-            secure: false,
-            path: '/',
-            sameSite: 'strict'
-        });
+        res.cookie(COOKIE.REFRESH_TOKEN_NAME, result.refreshToken, cookieOptions);
 
         res.success({
             user: result.user,
@@ -80,13 +73,13 @@ const refreshToken = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies[COOKIE.REFRESH_TOKEN_NAME];
         if (!refreshToken) {
             return res.error(401, 'Token not found, please log in.');
         }
         const result = await authService.logoutUser(refreshToken);
         res.success(result, 200);
-        res.clearCookie('refreshToken');
+        res.clearCookie(COOKIE.REFRESH_TOKEN_NAME);
     } catch (error) {
         res.error(500, error.message);
     }
@@ -97,3 +90,4 @@ module.exports = {
     refreshToken,
     logout,
 }
+

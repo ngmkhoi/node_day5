@@ -4,9 +4,10 @@ const bcrypt = require('bcrypt');
 const saltRounds = process.env.SALT_ROUNDS;
 const jwt = require('jsonwebtoken');
 const {SecretRefresh} = require("../config/jwt");
+const { AUTH } = require("../config/constants");
 const tokenGenerate = require("../helpers/generateToken");
 
-const expiresAt = new Date(Date.now() + 30*24*60*60*1000);
+const expiresAt = new Date(Date.now() + AUTH.REFRESH_TOKEN_EXPIRY_MS);
 
 class AuthService {
     async login({ email, password }) {
@@ -65,7 +66,6 @@ class AuthService {
     }
     async createNewToken(refreshToken) {
         let decoded;
-
         const tokenInDB = await refreshTokenModel.findByToken(refreshToken);
         if (!tokenInDB) {
             throw new Error('Invalid refresh token');

@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { SEARCH } = require('../config/constants');
 
 const usersModel = {
     searchByEmail: async (query, currentUserId) => {
@@ -6,8 +7,8 @@ const usersModel = {
             `SELECT id, email, full_name 
              FROM users 
              WHERE email LIKE ? AND id != ?
-             LIMIT 20`,
-            [`%${query}%`, currentUserId]
+             LIMIT ?`,
+            [`%${query}%`, currentUserId, SEARCH.USER_SEARCH_LIMIT]
         );
         return users;
     }

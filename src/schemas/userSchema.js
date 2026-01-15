@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { VALIDATION } = require('../config/constants');
 
 const registerSchema = Joi.object({
     email: Joi.string()
@@ -6,7 +7,7 @@ const registerSchema = Joi.object({
         .required(),
 
     password: Joi.string()
-        .min(8)
+        .min(VALIDATION.PASSWORD_MIN_LENGTH)
         .required(),
 
     full_name: Joi.string()
