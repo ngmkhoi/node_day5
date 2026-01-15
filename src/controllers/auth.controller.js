@@ -56,7 +56,7 @@ const refreshToken = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
         if (!refreshToken) {
-            return res.error(401, 'Refresh token required');
+            return res.error(401, 'Token not found, please log in.');
         }
         const result = await authService.createNewToken(refreshToken);
         res.cookie('refreshToken', result.refreshToken, {
@@ -82,7 +82,7 @@ const logout = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
         if (!refreshToken) {
-            return res.error(401, 'Refresh token required');
+            return res.error(401, 'Token not found, please log in.');
         }
         const result = await authService.logoutUser(refreshToken);
         res.success(result, 200);

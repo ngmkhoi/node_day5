@@ -18,6 +18,7 @@ const pool = mysql.createPool({
             email varchar(255) not null unique,
             password varchar(255) not null,
             full_name varchar(100),
+            verified_at timestamp default null,
             created_at timestamp default current_timestamp,
             updated_at timestamp default current_timestamp
         );`);
@@ -50,7 +51,7 @@ const pool = mysql.createPool({
             foreign key (sender_id) references users(id) on delete cascade
         );`)
 
-        await pool.query(`create table if not exists refresh_token (
+        await pool.query(`create table if not exists refresh_tokens (
             id int auto_increment primary key,
             user_id int not null,
             token varchar(255) not null unique,

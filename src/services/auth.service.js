@@ -26,34 +26,41 @@ class AuthService {
             user: {
                 id: user.id,
                 email: user.email,
+                verifiedAt: user.verified_at,
             },
             accessToken: accessToken,
             refreshToken: refreshToken,
         }
     }
     async register(payload) {
-        const existingUser = await authModel.checkEmailExists(payload.email);
-        if (existingUser) {
-            throw new Error('User already exists');
-        }
+        try {
+            const existingUser = await authModel.checkEmailExists(payload.email);
+            if (existingUser) {
+                throw new Error('User already exists');
+            }
 
-        const hashedPassword = await bcrypt.hash(payload.password, saltRounds);
+            const hashedPassword = await bcrypt.hash(payload.password, parseInt(saltRounds));
 
-        const newUser = await authModel.createUser({
-            email: payload.email,
-            password: hashedPassword,
-            full_name: payload.full_name,
-        })
+            const newUser = await authModel.createUser({
+                email: payload.email,
+                password: hashedPassword,
+                full_name: payload.full_name,
+            })
 
-        const {accessToken, refreshToken} = await tokenGenerate(newUser, expiresAt);
+            const {accessToken, refreshToken} = await tokenGenerate(newUser, expiresAt);
 
-        return {
-            user: {
-                id: newUser.id,
-                email: newUser.email,
-            },
-            accessToken: accessToken,
-            refreshToken: refreshToken,
+            return {
+                user: {
+                    id: newUser.id,
+                    email: newUser.email,
+                    verifiedAt: newUser.verified_at,
+                },
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+            }
+        } catch (error) {
+            console.error('Auth service register error:', error);
+            throw error;
         }
     }
     async createNewToken(refreshToken) {
