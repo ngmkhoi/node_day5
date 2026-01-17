@@ -2,6 +2,7 @@ const pool = require('../config/database');
 const conversationModel = require('../models/conversations.model');
 const messagesModel = require('../models/messages.model');
 const { ERROR_MESSAGES } = require('../config/constants');
+const userModel = require("../models/user.model");
 
 const conversationService = {
     createConversation: async ({ name, type, participantIds, creatorId }) => {
@@ -36,6 +37,16 @@ const conversationService = {
             }
 
             await connection.beginTransaction();
+
+            const userToCheck = participantIds;
+            const foundUsers = await userModel.findById(connection, userToCheck)
+
+            if(foundUsers.length !== userToCheck.length){
+                const foundIds = foundUsers.map(u => u.id);
+                const missingIds = userToCheck.filter(id => !foundIds.includes(id));
+
+                throw new Error(`Users not found: ${missingIds.join(', ')}`);
+            }
 
             const newConversationId = await conversationModel.create(connection, {
                 name,
