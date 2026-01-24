@@ -132,6 +132,32 @@ class AuthService {
         }
         return { message: ERROR_MESSAGES.LOGOUT_SUCCESS };
     }
+
+    async changePassword(userId, oldPassword, newPassword, confirmPassword) {
+        if (newPassword !== confirmPassword) {
+            throw new Error(ERROR_MESSAGES.PASSWORD_MISMATCH);
+        }
+
+        const user = await authModel.findByIdWithPassword(userId);
+        if (!user) {
+            throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
+        }
+
+        const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+        if (!isPasswordValid) {
+            throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
+        }
+
+        const isSameAsOld = await bcrypt.compare(newPassword, user.password);
+        if (isSameAsOld) {
+             throw new Error(ERROR_MESSAGES.SAME_AS_OLD_PASSWORD);
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, parseInt(saltRounds));
+        await authModel.updatePassword(userId, hashedPassword);
+
+        return { message: RESPONSE_MESSAGES.PASSWORD_CHANGE_SUCCESS };
+    }
 }
 
 module.exports = new AuthService();

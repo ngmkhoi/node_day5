@@ -29,6 +29,17 @@ class EmailService {
         });
         return info;
     }
+
+    async sendPasswordChangeEmail(user, time) {
+        const info = await transporter.sendMail({
+            from: '"khoivippro123" <nguyenminhkhoi0411@gmail.com>',
+            to: user.email,
+            subject: "Password Changed Successfully",
+            text: `Your password was changed successfully at ${time}.`,
+            html: `<p>Your password was changed successfully at <b>${time}</b>.</p>`,
+        });
+        return info;
+    }
 }
 
 module.exports = new EmailService();

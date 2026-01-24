@@ -65,6 +65,18 @@ const pool = mysql.createPool({
             index idx_user_revoked (user_id, revoked)
         );`)
 
+        await pool.query(`create table if not exists jobs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            type VARCHAR(50) NOT NULL,          
+            payload JSON NOT NULL,               
+            status ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            started_at TIMESTAMP NULL,
+            completed_at TIMESTAMP NULL,
+            INDEX idx_status_type (status, type),
+            INDEX idx_created_at (created_at)
+            );`)
+
         console.log('Table created successfully');
     }catch (error) {
         console.error('Error creating table:', error);

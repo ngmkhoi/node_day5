@@ -105,8 +105,13 @@ const RESPONSE_MESSAGES = {
     SUCCESS: 'success',
     ERROR: 'error',
     VERIFIED: 'Email verified successfully',
-    RESEND_VERIFY_TOKEN: 'Verification email sent successfully'
+    RESEND_VERIFY_TOKEN: 'Verification email sent successfully',
+    PASSWORD_CHANGE_SUCCESS: 'Password changed successfully',
+    PASSWORD_MISMATCH: 'New password and confirm password do not match',
+    SAME_AS_OLD_PASSWORD: 'New password cannot be the same as the old password'
 };
+
+const MAX_ATTEMPTS = 3
 
 module.exports = {
     SERVER,
@@ -120,4 +125,5 @@ module.exports = {
     HTTP_STATUS,
     ERROR_MESSAGES,
     RESPONSE_MESSAGES,
+    MAX_ATTEMPTS
 };

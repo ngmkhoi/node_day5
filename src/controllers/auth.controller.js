@@ -1,6 +1,6 @@
 const authService = require('../services/auth.service');
 const { COOKIE, HTTP_STATUS, ERROR_MESSAGES, RESPONSE_MESSAGES} = require('../config/constants');
-const emailService = require('../services/email.service');
+const queueService = require('../services/queue.service');
 const { SecretVerify } = require("../config/jwt")
 const jwt = require("jsonwebtoken");
 const { addToBlacklist } = require('../helpers/tokenBlacklist');
@@ -38,14 +38,20 @@ const login = async (req, res) => {
 const createUser = async (req, res) => {
     try {
         const { email, password, full_name } = req.body;
-        const result = await authService.register({ email, password, full_name });
-        res.cookie(COOKIE.REFRESH_TOKEN_NAME, result.refreshToken, cookieOptions);
-        await emailService.sendVerifyEmail(result.user, "Verify email");
+        const { user, accessToken, refreshToken } = await authService.register({ email, password, full_name
+        });
+        res.cookie(COOKIE.REFRESH_TOKEN_NAME, refreshToken, cookieOptions);
+        //await emailService.sendVerifyEmail(result.user, "Verify email");
+        await queueService.addJob('sendVerificationEmail', {
+            userId: user.id,
+            subject: 'Verify Your Email'
+        });
         res.success({
-            user: result.user,
-            accessToken: result.accessToken,
+            user: user,
+            accessToken: accessToken,
         }, HTTP_STATUS.CREATED);
     } catch (error) {
+        console.error("Register Error:", error);
         if (error.message === ERROR_MESSAGES.USER_ALREADY_EXISTS) {
             return res.error(HTTP_STATUS.CONFLICT, error.message);
         }
@@ -138,11 +144,40 @@ const verifyEmail = async (req, res, next) => {
 const resendVerifyToken = async (req, res, next) => {
     try {
         const user = req.user
-        await emailService.sendVerifyEmail(user, "Verify email");
+        await queueService.addJob('sendVerificationEmail', {
+            userId: user.id,
+            subject: 'Verify Your Email'
+        });
         res.success(RESPONSE_MESSAGES.RESEND_VERIFY_TOKEN, HTTP_STATUS.OK);
     } catch (error) {
         if(error.message !== ERROR_MESSAGES.INTERNAL_ERROR){
             return res.error(HTTP_STATUS.CONFLICT, error.message);
+        }
+        res.error(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
+        res.error(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
+    }
+}
+
+const changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+        const userId = req.user.id;
+        const result = await authService.changePassword(userId, oldPassword, newPassword, confirmPassword);
+        
+        // Send email notification task
+        const time = new Date().toLocaleString();
+        await queueService.addJob('sendPasswordChangeEmail', {
+            userId: userId,
+            time: time
+        });
+
+        res.success(result, HTTP_STATUS.OK);
+    } catch (error) {
+        if (error.message === ERROR_MESSAGES.PASSWORD_MISMATCH || error.message === ERROR_MESSAGES.SAME_AS_OLD_PASSWORD) {
+            return res.error(HTTP_STATUS.BAD_REQUEST, error.message);
+        }
+        if (error.message === ERROR_MESSAGES.INVALID_CREDENTIALS) {
+             return res.error(HTTP_STATUS.UNAUTHORIZED, error.message);
         }
         res.error(HTTP_STATUS.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_ERROR);
     }
@@ -155,5 +190,6 @@ module.exports = {
     refreshToken,
     logout,
     verifyEmail,
-    resendVerifyToken
+    resendVerifyToken,
+    changePassword
 }

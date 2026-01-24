@@ -29,6 +29,11 @@ const findById = async (userId) => {
     return users[0] || null;
 }
 
+const findByIdWithPassword = async (userId) => {
+    const [users] = await pool.query("select id, email, password, full_name, verified_at, created_at, updated_at from users where id = ?", [userId]);
+    return users[0] || null;
+}
+
 const isEmailVerified = async (userId) => {
     const [result] = await pool.query("select verified_at from users where id = ?", [userId]);
     return result[0]?.verified_at !== null;
@@ -39,11 +44,18 @@ const verifyEmailById = async (userId) => {
     return result.affectedRows;
 }
 
+const updatePassword = async (userId, hashedPassword) => {
+    const [result] = await pool.query("update users set password = ? where id = ?", [hashedPassword, userId]);
+    return result.affectedRows;
+}
+
 module.exports = {
     findByEmail,
     checkEmailExists,
     createUser,
     findById,
+    findByIdWithPassword,
     isEmailVerified,
-    verifyEmailById
+    verifyEmailById,
+    updatePassword
 }
