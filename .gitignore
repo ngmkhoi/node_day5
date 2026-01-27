@@ -22,3 +22,9 @@ Thumbs.db
 
 #agent
 .agent
+
+#backup
+backup
+
+#google service account
+google-service-account.json

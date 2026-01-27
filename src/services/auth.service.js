@@ -155,6 +155,7 @@ class AuthService {
 
         const hashedPassword = await bcrypt.hash(newPassword, parseInt(saltRounds));
         await authModel.updatePassword(userId, hashedPassword);
+        await refreshTokenModel.revokeAllUserTokens(userId);
 
         return { message: RESPONSE_MESSAGES.PASSWORD_CHANGE_SUCCESS };
     }

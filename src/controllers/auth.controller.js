@@ -161,8 +161,14 @@ const resendVerifyToken = async (req, res, next) => {
 const changePassword = async (req, res) => {
     try {
         const { oldPassword, newPassword, confirmPassword } = req.body;
+        const refreshToken = req.cookies[COOKIE.REFRESH_TOKEN_NAME];
+        const authHeader = req.headers["authorization"];
+        const accessToken = authHeader?.replace('Bearer', '')?.trim();
+
+        // Add accessToken to blacklist to revoke it immediately
+
         const userId = req.user.id;
-        const result = await authService.changePassword(userId, oldPassword, newPassword, confirmPassword);
+        const result = await authService.changePassword(userId, oldPassword, newPassword, confirmPassword, refreshToken);
         
         // Send email notification task
         const time = new Date().toLocaleString();
@@ -170,6 +176,14 @@ const changePassword = async (req, res) => {
             userId: userId,
             time: time
         });
+
+        if (accessToken) {
+            try {
+                await addToBlacklist(accessToken);
+            } catch (error) {
+                console.error('Error adding token to blacklist:', error);
+            }
+        }
 
         res.success(result, HTTP_STATUS.OK);
     } catch (error) {

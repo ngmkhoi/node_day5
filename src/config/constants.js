@@ -113,6 +113,11 @@ const RESPONSE_MESSAGES = {
 
 const MAX_ATTEMPTS = 3
 
+// ========== TIMEZONE ==========
+const TIMEZONE = {
+    Ho_Chi_Minh: 'Asia/Ho_Chi_Minh'
+}
+
 module.exports = {
     SERVER,
     CORS,
@@ -125,5 +130,6 @@ module.exports = {
     HTTP_STATUS,
     ERROR_MESSAGES,
     RESPONSE_MESSAGES,
-    MAX_ATTEMPTS
+    MAX_ATTEMPTS,
+    TIMEZONE
 };
