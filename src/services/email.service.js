@@ -84,9 +84,8 @@ class EmailService {
 
     async sendDeletedTokenNotification(email, data) {
         const { status, deletedCount } = data;
-        console.log(data)
         const subject = status === 'SUCCESS'
-            ? `✅ [Cleanup Success] Deleted ${deletedCount} Expired Tokens`
+            ? `✅ [Cleanup Success] Token Cleanup: ${deletedCount} tokens removed`
             : `❌ [Cleanup Failed] Token Cleanup Alert`;
 
         const htmlTemplate = getTokenCleanupEmailTemplate(data);
