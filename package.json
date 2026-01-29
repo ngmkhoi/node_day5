@@ -6,7 +6,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "queue": "node queue.js",
-    "scheduler": "node scheduler.js",
+    "scheduler": "node schedule.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
